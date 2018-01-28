@@ -7,7 +7,7 @@ server_home=/usr/local/youtube-stream
 yum install -y python python-pip vim sysstat
 
 ## install python libraries
-pip install flask pafy youtube-dl requests
+pip install flask pafy youtube-dl requests py_lru_cache
 
 ## deploy code
 server_ip=$(ifconfig | grep "inet addr" | sed -n 1p | cut -d':' -f2 | cut -d' ' -f1)

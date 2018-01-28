@@ -3,6 +3,7 @@
 
 import pafy
 import requests
+import lru
 from flask import Flask
 from flask import Response
 from flask import stream_with_context
@@ -10,6 +11,7 @@ from flask import render_template
 from flask import request
 
 app = Flask(__name__)
+cache = lru.LRUCacheDict(max_size=100, expiration=60*5)
 
 video_db = {}
 buffer_size = 1024 * 1024  # 1MB
@@ -34,13 +36,14 @@ def get_video_info(video_id):
             best = video.getbest()
             audio = video.getbestaudio('m4a')
             video_info = VideoInfo(video_id, video.title, best.url, audio.url, best.extension, best.get_filesize())
-            # video_db[video_id] = video_info
+            cache[video_id] = video_info
             return video_info
         except Exception:
             print 'Error getting video: ' + youtube_url + video_id
             return None
     else:
-        return video_db[video_id]
+        print 'getting cached item: ' + video_id
+        return cache[video_id]
 
 
 def get_stream(action, video_id, res_type):
