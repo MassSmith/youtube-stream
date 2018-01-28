@@ -30,7 +30,7 @@ class VideoInfo:
 
 
 def get_video_info(video_id):
-    if not video_db.has_key(video_id):
+    if not cache.has_key(video_id):
         try:
             video = pafy.new(youtube_url + video_id)
             best = video.getbest()
@@ -39,10 +39,10 @@ def get_video_info(video_id):
             cache[video_id] = video_info
             return video_info
         except Exception:
-            print 'Error getting video: ' + youtube_url + video_id
+            print 'failed to get video: ' + youtube_url + video_id
             return None
     else:
-        print 'getting cached item: ' + video_id
+        print 'getting cached video info: ' + video_id
         return cache[video_id]
 
 
