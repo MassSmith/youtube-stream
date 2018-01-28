@@ -12,9 +12,10 @@ pip install flask pafy youtube-dl requests
 ## deploy code
 server_ip=$(ifconfig | grep "inet addr" | sed -n 1p | cut -d':' -f2 | cut -d' ' -f1)
 sed -i "s/local_server_ip/$server_ip/g" server.py
-sed -i "s/local_server_ip/$server_ip/g" templates/index.html 
-mkdir -p $server_home
-cp -R * $server_home 
+sed -i "s/local_server_ip/$server_ip/g" templates/index.html
+sed -i "s/local_server_ip/$server_ip/g" templates/error.html
+mkdir -p ${server_home}
+cp -R * ${server_home}
 
 ## enable and start service
 chmod +x yt-stream

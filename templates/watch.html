@@ -7,12 +7,12 @@
 <body bgcolor="#faf0e6">
 <h5 align="center">{{title}}</h5>
 <p align="center">
-    <video style="background:darkgrey" width="640" height="360" controls="controls" autoplay="autoplay" >
-        <source src="./live?v={{id}}" type="video/mp4">
+    <video style="background:darkgrey" width="640" height="360" controls="controls" autoplay="autoplay">
+        <source src="./live?v={{id}}" type="video/{{extension}}">
     </video>
 </p>
 <h5 align="center">
-    <a href="./download?v={{id}}">下载此视频</a>
+    <a href="./download?v={{id}}&type=audio">下载音频</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="./download?v={{id}}&type=video">下载视频</a>
 </h5>
 <br/>
 <h5 align="center">我的项目：
@@ -22,4 +22,3 @@
 </h5>
 </body>
 </html>
-

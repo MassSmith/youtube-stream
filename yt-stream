@@ -1,6 +1,6 @@
 #!/bin/bash
 # youtube-stream server
-# chkconfig:   - 85 15 
+# chkconfig: - 85 15
 
 home=/usr/local/youtube-stream
 
@@ -13,7 +13,7 @@ start() {
 	pid=$(get_pid)
 	if [ -z $pid ]; then
 		echo -e "starting youtube-stream server\n"
-		python $home/server.py 2>&1 >>$home/access.log &
+		python -u $home/server.py >>$home/access.log 2>&1 &
 	else
 		echo -e "youtube-stream is already running with pid=$pid\n"
 	fi	
@@ -46,4 +46,5 @@ case "$1" in
 		echo "Usage: service yt-stream start|stop|restart"
 		exit 1
 esac
+
 
