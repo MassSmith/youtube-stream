@@ -63,8 +63,7 @@ def get_stream(action, video_id, res_type):
 
     headers = {
         'Content-Disposition': file_name,
-        'Content-Type': 'video/' + extension,
-        'Content-Length': video_info.size
+        'Content-Type': 'video/' + extension
     }
     return Response(stream_with_context(req.iter_content(chunk_size=buffer_size)), headers=headers)
 
