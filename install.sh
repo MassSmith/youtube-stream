@@ -12,9 +12,9 @@ pip install flask pafy youtube-dl requests py_lru_cache
 ## deploy code
 server_ip=$(ifconfig | grep "inet addr" | sed -n 1p | cut -d':' -f2 | cut -d' ' -f1)
 sed -i "s/local_server_ip/$server_ip/g" server.py
-sed -i "s/local_server_ip/$server_ip/g" templates/index.html
-sed -i "s/local_server_ip/$server_ip/g" templates/error.html
-sed -i "s/local_server_ip/$server_ip/g" templates/watch.html
+for f in $(ls templates/*.html); do
+    sed -i "s/local_server_ip/$server_ip/g" ${f}
+done
 mkdir -p ${server_home}
 cp -R * ${server_home}
 

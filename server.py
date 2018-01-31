@@ -98,6 +98,11 @@ def download():
         return get_stream('download', video_id, 'video')
 
 
+@app.route('/mobile')
+def mobile():
+    return render_template("mobile.html")
+
+
 if __name__ == '__main__':
     requests.packages.urllib3.disable_warnings()  # suppress SSL warning
     app.run(host='local_server_ip', port=9999, threaded=True)
