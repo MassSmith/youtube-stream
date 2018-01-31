@@ -57,7 +57,7 @@ def get_stream(action, video_id, res_type):
         extension = 'm4a'
 
     # file_name = 'filename=' + video_info.id + '.' + extension
-    file_name = 'filename=' + urllib.quote(video_info.title) + video_info.extension
+    file_name = 'filename=' + urllib.quote(video_info.title.encode('utf-8')) + '.' + video_info.extension
     if action == 'download':
         file_name = 'attachment; ' + file_name
 
