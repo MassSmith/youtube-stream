@@ -1,10 +1,35 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <title>{{title}}</title>
-    <meta charset="UTF-8">
+<title>{{title}}</title>
+<meta charset="UTF-8">
+<style>
+html, body {
+	height: 98%
+}
+.scroll-wrapper {
+	right: 0;
+	bottom: 0;
+	left: 0;
+	top: 0;
+	overflow-y: scroll;
+	float: left;
+}
+div {
+	width: 50%;
+	height: 100%;
+}
+#left {
+    background: #faf0e6;
+}
+iframe {
+	width: 100%;
+	height: 98%;
+}
+</style>
 </head>
-<body bgcolor="#faf0e6">
+<body>
+<div class="scroll-wrapper" id="left">
 <h5 align="center">{{title}}</h5>
 <p align="center">
     <video onloadstart="this.volume=0.5" style="background:darkgrey" width="640" height="360" controls="controls" autoplay="autoplay">
@@ -20,5 +45,9 @@
     <a href="https://github.com/gfw-breaker/open-proxy">open-proxy</a> -
     <a href="https://github.com/gfw-breaker/youtube-stream">youtube-stream</a>
 </h5>
+</div>
+<div class="scroll-wrapper" id="right">
+    <iframe src="http://local_server_ip/videos/index.html" frameborder="0" scrolling="yes"></iframe>
+</div>
 </body>
 </html>

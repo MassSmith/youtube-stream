@@ -4,6 +4,7 @@
 import pafy
 import requests
 import lru
+import urllib
 from flask import Flask
 from flask import Response
 from flask import stream_with_context
@@ -13,7 +14,6 @@ from flask import request
 app = Flask(__name__)
 cache = lru.LRUCacheDict(max_size=100, expiration=60*5)
 
-video_db = {}
 buffer_size = 1024 * 1024  # 1MB
 youtube_url = "https://www.youtube.com/watch?v="
 
@@ -33,7 +33,7 @@ def get_video_info(video_id):
     if not cache.has_key(video_id):
         try:
             video = pafy.new(youtube_url + video_id)
-            best = video.getbest()
+            best = video.getbest('mp4')
             audio = video.getbestaudio('m4a')
             video_info = VideoInfo(video_id, video.title, best.url, audio.url, best.extension, best.get_filesize())
             cache[video_id] = video_info
@@ -56,14 +56,15 @@ def get_stream(action, video_id, res_type):
         req = requests.get(video_info.audio_url, stream=True, verify=False)
         extension = 'm4a'
 
-    # file_name = 'filename=' + video_info.title.encode('utf-8') + video_info.extension
-    file_name = 'filename=' + video_info.id + '.' + extension
+    # file_name = 'filename=' + video_info.id + '.' + extension
+    file_name = 'filename=' + urllib.quote(video_info.title) + video_info.extension
     if action == 'download':
         file_name = 'attachment; ' + file_name
 
     headers = {
         'Content-Disposition': file_name,
-        'Content-Type': 'video/' + extension
+        'Content-Type': 'video/' + extension,
+        'Content-Length': video_info.size
     }
     return Response(stream_with_context(req.iter_content(chunk_size=buffer_size)), headers=headers)
 
@@ -103,6 +104,6 @@ if __name__ == '__main__':
     app.run(host='local_server_ip', port=9999, threaded=True)
 
 
-# url = "https://www.youtube.com/watch?v=xlj95tyM10c"
+# url = "https://www.youtube.com/watch?v=PAFYgZ0Y2js"
 # url = "https://www.youtube.com/watch?v=Bey4XXJAqS8"
-# url = "https://www.youtube.com/watch?v=92KWubxetbE"
+# url = "https://www.youtube.com/watch?v=D2LqZAfR_ZE"

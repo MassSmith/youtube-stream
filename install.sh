@@ -14,6 +14,7 @@ server_ip=$(ifconfig | grep "inet addr" | sed -n 1p | cut -d':' -f2 | cut -d' ' 
 sed -i "s/local_server_ip/$server_ip/g" server.py
 sed -i "s/local_server_ip/$server_ip/g" templates/index.html
 sed -i "s/local_server_ip/$server_ip/g" templates/error.html
+sed -i "s/local_server_ip/$server_ip/g" templates/watch.html
 mkdir -p ${server_home}
 cp -R * ${server_home}
 
