@@ -82,8 +82,14 @@ def watch():
     return render_template("watch.html", id=video_info.id, title=video_info.title, extension=video_info.extension)
 
 
+@app.route('/live')
+def play():
+    video_id = request.args.get('v')
+    return get_stream('live', video_id, 'video')
+
+
 @app.route('/embed/<video_id>')
-def play(video_id):
+def embed(video_id):
     return get_stream('live', video_id, 'video')
 
 
