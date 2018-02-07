@@ -94,11 +94,6 @@ def play():
     return get_stream('live', video_id, 'video')
 
 
-@app.route('/embed/<video_id>')
-def embed(video_id):
-    return get_stream('live', video_id, 'video')
-
-
 @app.route('/download')
 def download():
     video_id = request.args.get('v')
