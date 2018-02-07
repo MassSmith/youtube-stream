@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <title>{{ title }}</title>
+    <meta charset="UTF-8">
+    <style>
+        *{margin: 0; padding: 0}
+    </style>
+</head>
+<body>
+<video onloadstart="this.volume=0.5" width="560" height="315" controls="controls" preload="metadata">
+    <source src="./live?v={{id}}" type="video/{{extension}}">
+</video>
+</body>
+</html>
