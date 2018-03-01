@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # author: gfw-breaker
+import re
 
 import pafy
 import requests
@@ -38,7 +39,8 @@ def get_video_info(video_id):
             video_info = VideoInfo(video_id, video.title, best.url, audio.url, best.extension, best.get_filesize())
             cache[video_id] = video_info
             return video_info
-        except Exception:
+        except Exception as e:
+            print e.message
             print 'failed to get video: ' + youtube_url + video_id
             return None
     else:
@@ -46,10 +48,19 @@ def get_video_info(video_id):
         return cache[video_id]
 
 
-def get_stream(action, video_id, res_type):
+def get_stream(action, video_id, res_type, r_start, r_end):
     video_info = get_video_info(video_id)
+    file_size = video_info.size
+
+    start = r_start
+    if r_end is None:
+        end = file_size - start - 1
+    end = min(r_end, file_size - 1)
+    length = end - start + 1
 
     if res_type == 'video':
+        url = '%s&range=%s-%s'.format(video_info.url, start, end)
+        print url
         req = requests.get(video_info.url, stream=True, verify=False)
         extension = video_info.extension
     else:
@@ -63,9 +74,16 @@ def get_stream(action, video_id, res_type):
 
     headers = {
         'Content-Disposition': file_name,
-        'Content-Type': 'video/' + extension
+        'Content-Type': 'video/' + extension,
+        'Content-Length': length
     }
-    return Response(stream_with_context(req.iter_content(chunk_size=buffer_size)), headers=headers)
+
+    if r_start == 0 and r_end is None:
+        return Response(stream_with_context(req.iter_content(chunk_size=buffer_size)), headers=headers)
+    else:
+        headers['Accept-Ranges'] = 'bytes'
+        headers['Content-Range'] = 'bytes {0}-{1}/{2}'.format(start, end, file_size)
+        return Response(stream_with_context(req.iter_content(chunk_size=buffer_size)), 206, headers=headers)
 
 
 @app.route('/')
@@ -91,7 +109,10 @@ def embed(video_id):
 @app.route('/live')
 def play():
     video_id = request.args.get('v')
-    return get_stream('live', video_id, 'video')
+    if 'Range' in request.headers:
+        r_range = get_range(request)
+        return get_stream('live', video_id, r_range[0], r_range[1])
+    return get_stream('live', video_id, 'video', 0)
 
 
 @app.route('/download')
@@ -99,9 +120,9 @@ def download():
     video_id = request.args.get('v')
     res_type = request.args.get('type')
     if res_type == 'audio':
-        return get_stream('download', video_id, 'audio')
+        return get_stream('download', video_id, 'audio', 0)
     else:
-        return get_stream('download', video_id, 'video')
+        return get_stream('download', video_id, 'video', 0)
 
 
 @app.route('/mobile')
@@ -109,9 +130,23 @@ def mobile():
     return render_template("mobile.html")
 
 
+def get_range(request):
+    r_range = request.headers.get('Range')
+    m = re.match('bytes=(?P<start>\d+)-(?P<end>\d+)?', r_range)
+    if m:
+        start = m.group('start')
+        end = m.group('end')
+        start = int(start)
+        if end is not None:
+            end = int(end)
+        return start, end
+    else:
+        return 0, None
+
+
 if __name__ == '__main__':
     requests.packages.urllib3.disable_warnings()  # suppress SSL warning
-    app.run(host='local_server_ip', port=9999, threaded=True)
+    app.run(port=9999, threaded=True)
 
 
 # url = "https://www.youtube.com/watch?v=PAFYgZ0Y2js"
