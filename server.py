@@ -106,7 +106,7 @@ def home():
 
 @app.route('/watch')
 def watch():
-    video_id = request.args.get('v')
+    video_id = request.args.get('v').split('.')[0]
     video_info = get_video_info(video_id)
     if video_info is None or video_info.size == 0:
         return render_template("error.html")
@@ -121,7 +121,7 @@ def embed(video_id):
 
 @app.route('/live')
 def play():
-    video_id = request.args.get('v')
+    video_id = request.args.get('v').split('.')[0]
     if 'Range' in request.headers:
         r_range = get_range(request)
         print r_range
@@ -131,7 +131,7 @@ def play():
 
 @app.route('/download')
 def download():
-    video_id = request.args.get('v')
+    video_id = request.args.get('v').split('.')[0]
     res_type = request.args.get('type')
     if res_type == 'audio':
         return dl_stream('download', video_id, 'audio')
