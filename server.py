@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # author: gfw-breaker
+import re
 
 import pafy
 import requests
@@ -12,7 +13,7 @@ from flask import render_template
 from flask import request
 
 app = Flask(__name__)
-cache = lru.LRUCacheDict(max_size=100, expiration=60*5)
+cache = lru.LRUCacheDict(max_size=100, expiration=60*60, concurrent=True)
 
 buffer_size = 1024 * 1024  # 1MB
 youtube_url = "https://www.youtube.com/watch?v="
@@ -38,7 +39,8 @@ def get_video_info(video_id):
             video_info = VideoInfo(video_id, video.title, best.url, audio.url, best.extension, best.get_filesize())
             cache[video_id] = video_info
             return video_info
-        except Exception:
+        except Exception as e:
+            print e.message
             print 'failed to get video: ' + youtube_url + video_id
             return None
     else:
@@ -46,7 +48,37 @@ def get_video_info(video_id):
         return cache[video_id]
 
 
-def get_stream(action, video_id, res_type):
+def get_stream(action, video_id, res_type, r_start, r_end=None):
+    video_info = get_video_info(video_id)
+    file_size = video_info.size
+
+    start = r_start
+    if r_end is None:
+        r_end = file_size - 1
+    length = min(r_end - start + 1, 524288)
+    end = start + length - 1
+    print end
+
+    url = '{0}&range={1}-{2}'.format(video_info.url, start, end)
+    #print url
+    hhds = { 'Range': 'bytes={0}-{1}'.format(start, end) }
+    #req = requests.get(video_info.url, stream=True, verify=False, headers=hhds)
+    req = requests.get(video_info.url, verify=False, headers=hhds)
+    length = len(req.content)
+    #print length
+    #print req.headers
+    extension = video_info.extension
+
+    headers = {
+        'Content-Type': 'video/' + extension,
+        'Content-Length': length,
+        'Accept-Ranges': 'bytes',
+        'Content-Range': 'bytes {0}-{1}/{2}'.format(start, end, file_size)
+    }
+    return Response(req.content, 206, headers=headers)
+
+
+def dl_stream(action, video_id, res_type):
     video_info = get_video_info(video_id)
 
     if res_type == 'video':
@@ -58,8 +90,7 @@ def get_stream(action, video_id, res_type):
 
     # file_name = 'filename=' + video_info.id + '.' + extension
     file_name = 'filename=' + urllib.quote(video_info.title.encode('utf-8')) + '.' + extension
-    if action == 'download':
-        file_name = 'attachment; ' + file_name
+    file_name = 'attachment; ' + file_name
 
     headers = {
         'Content-Disposition': file_name,
@@ -91,7 +122,11 @@ def embed(video_id):
 @app.route('/live')
 def play():
     video_id = request.args.get('v')
-    return get_stream('live', video_id, 'video')
+    if 'Range' in request.headers:
+        r_range = get_range(request)
+        print r_range
+        return get_stream('live', video_id, 'video', r_range[0], r_range[1])
+    return get_stream('live', video_id, 'video', 0)
 
 
 @app.route('/download')
@@ -99,9 +134,9 @@ def download():
     video_id = request.args.get('v')
     res_type = request.args.get('type')
     if res_type == 'audio':
-        return get_stream('download', video_id, 'audio')
+        return dl_stream('download', video_id, 'audio')
     else:
-        return get_stream('download', video_id, 'video')
+        return dl_stream('download', video_id, 'video')
 
 
 @app.route('/mobile')
@@ -109,9 +144,23 @@ def mobile():
     return render_template("mobile.html")
 
 
+def get_range(request):
+    r_range = request.headers.get('Range')
+    m = re.match('bytes=(?P<start>\d+)-(?P<end>\d+)?', r_range)
+    if m:
+        start = m.group('start')
+        end = m.group('end')
+        start = int(start)
+        if end is not None:
+            end = int(end)
+        return start, end
+    else:
+        return 0, None
+
+
 if __name__ == '__main__':
     requests.packages.urllib3.disable_warnings()  # suppress SSL warning
-    app.run(host='local_server_ip', port=9999, threaded=True)
+    app.run(host='local_server_ip', port=9998, threaded=True)
 
 
 # url = "https://www.youtube.com/watch?v=PAFYgZ0Y2js"
