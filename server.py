@@ -55,7 +55,7 @@ def get_stream(action, video_id, res_type, r_start, r_end=None):
     start = r_start
     if r_end is None:
         r_end = file_size - 1
-    length = min(r_end - start + 1, 524288)
+    length = min(r_end - start + 1, 1024*1024*10)
     end = start + length - 1
     print end
 
