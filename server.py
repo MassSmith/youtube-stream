@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # author: gfw-breaker
-import re
 
+import re
+import uuid
 import pafy
 import requests
 import lru
@@ -11,9 +12,11 @@ from flask import Response
 from flask import stream_with_context
 from flask import render_template
 from flask import request
+from flask import redirect
 
 app = Flask(__name__)
 cache = lru.LRUCacheDict(max_size=100, expiration=60*60, concurrent=True)
+files = lru.LRUCacheDict(max_size=5000, expiration=60 * 60, concurrent=True)
 
 buffer_size = 1024 * 1024  # 1MB
 youtube_url = "https://www.youtube.com/watch?v="
@@ -28,6 +31,16 @@ class VideoInfo:
         self.audio_url = audio_url
         self.extension = extension
         self.size = size
+
+
+def get_file_by_id(video_id):
+    file_name = str(uuid.uuid1()) + '.mp4'
+    files[file_name] = video_id
+    return file_name
+
+
+def get_id_by_file(virtual_file):
+    return files[virtual_file]
 
 
 def get_video_info(video_id):
@@ -60,13 +73,13 @@ def get_stream(action, video_id, res_type, r_start, r_end=None):
     print end
 
     url = '{0}&range={1}-{2}'.format(video_info.url, start, end)
-    #print url
-    hhds = { 'Range': 'bytes={0}-{1}'.format(start, end) }
-    #req = requests.get(video_info.url, stream=True, verify=False, headers=hhds)
+    # print url
+    hhds = {'Range': 'bytes={0}-{1}'.format(start, end)}
+    # req = requests.get(video_info.url, stream=True, verify=False, headers=hhds)
     req = requests.get(video_info.url, verify=False, headers=hhds)
     length = len(req.content)
-    #print length
-    #print req.headers
+    # print length
+    # print req.headers
     extension = video_info.extension
 
     headers = {
@@ -122,6 +135,13 @@ def embed(video_id):
 @app.route('/live')
 def play():
     video_id = request.args.get('v').split('.')[0]
+    file_id = get_file_by_id(video_id)
+    return redirect('/random/' + file_id, code=302)
+
+
+@app.route('/random/<virtual_file>')
+def random(virtual_file):
+    video_id = files[virtual_file]
     if 'Range' in request.headers:
         r_range = get_range(request)
         print r_range
@@ -160,7 +180,7 @@ def get_range(request):
 
 if __name__ == '__main__':
     requests.packages.urllib3.disable_warnings()  # suppress SSL warning
-    app.run(host='local_server_ip', port=9999, threaded=True)
+    app.run(host='0.0.0.0', port=9999, threaded=True)
 
 
 # url = "https://www.youtube.com/watch?v=PAFYgZ0Y2js"
