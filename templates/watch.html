@@ -3,8 +3,9 @@
 <head>
 <title>{{title}}</title>
 <meta charset="UTF-8">
-<script type="text/javascript" src="http://198.13.56.205/player/jwplayer.js"></script>
-<script>jwplayer.key="4sNBpozdkb2Gv+IYeWyd+CID9tW2NXdJE5GeSg==";</script>
+<script src="https://unpkg.com/video.js/dist/video.js"></script>
+<script src="https://unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js"></script>
+<link rel='stylesheet' id='videojs-css'  href='https://unpkg.com/video.js/dist/video-js.css?ver=4.9.3' type='text/css' media='all' />
 <style>
 html, body {
 	height: 98%
@@ -31,7 +32,7 @@ iframe {
 #player {
 	max-width: 960px;
 	margin: 0 auto;
-	margin-top: 60px;
+	margin-top: 40px;
 }
 
 #tooltip {
@@ -43,28 +44,23 @@ iframe {
 </head>
 <body>
 <div class="scroll-wrapper" id="left">
+<br/>
 <h5 align="center">{{title}}</h5>
 <p align="center">
-<div id="player">
-	Loading...
-</div>
+<video id=player height="360px" width="640px" class="video-js vjs-default-skin" controls autoplay preload="auto">
+  <source
+     src="./live?v={{id}}"
+     type="video/mp4">
+</video>
 <script type="text/javascript">
-jwplayer("player").setup({
-	"file": "./live?v={{id}}",
-	"type": "mp4",
-	"width": "640",
-	"height": "360",
-	"title": "<div id='tooltip'>视频加载中，请耐心等待</div>",
-	"autostart": "true",
-	"base": "http://198.13.56.205/player/",
-	"mute": "false",
-});
+	var player = videojs('player');
+	player.play();
 </script>
 </p>
+<br/>
 <h5 align="center">
     <a href="./download?v={{id}}&type=audio">下载音频</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="./download?v={{id}}&type=video">下载视频</a>
 </h5>
-<br/>
 <h5 align="center">友情链接：
     <a href="http://truth.atspace.eu/" target="_blank">我的博客</a> -
     <a href="https://github.com/Alvin9999/new-pac/wiki" target="_blank">自由上网</a> -
@@ -73,7 +69,7 @@ jwplayer("player").setup({
 </h5>
 </div>
 <div class="scroll-wrapper" id="right">
-    <iframe src="http://198.13.56.205/videos/index.html" frameborder="0" scrolling="yes"></iframe>
+    <iframe src="http://local_server_ip/videos/index.html" frameborder="0" scrolling="yes"></iframe>
 </div>
 </body>
 </html>
