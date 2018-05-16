@@ -16,6 +16,12 @@ cp -R * ${server_home}
 ipaddr=$(ifconfig | grep "inet addr" | sed -n 1p | cut -d':' -f2 | cut -d' ' -f1)
 sed -i "s/localhost/$ipaddr/g" ${server_home}/upstreams.json
 
+## setup monitor
+cp check.sh /root
+cat >> /var/spool/cron/root << EOF
+* * * * * /root/check.sh
+EOF
+
 ## enable and start service
 chmod +x yt-stream
 cp yt-stream /etc/init.d
