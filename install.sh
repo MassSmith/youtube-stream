@@ -18,6 +18,7 @@ sed -i "s/localhost/$ipaddr/g" ${server_home}/upstreams.json
 
 ## setup monitor
 cp check.sh /root
+cp count.sh /root
 cat >> /var/spool/cron/root << EOF
 * * * * * /root/check.sh
 EOF
