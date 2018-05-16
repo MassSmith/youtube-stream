@@ -4,10 +4,10 @@
 server_home=/usr/local/youtube-stream
 
 ## install system dependencies
-yum install -y python python-pip vim sysstat
+yum install -y python python-pip vim sysstat net-tools
 
 ## install python libraries
-pip install flask pafy youtube-dl requests py_lru_cache
+pip install flask pafy youtube-dl requests py_lru_cache tornado
 
 ## deploy code
 mkdir -p ${server_home}

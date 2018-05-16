@@ -16,6 +16,12 @@ from flask import stream_with_context
 from flask import render_template
 from flask import request
 from flask import redirect
+from tornado.wsgi import WSGIContainer
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
+from tornado.options import define, options
+import logging
+
 
 app = Flask(__name__)
 cache = lru.LRUCacheDict(max_size=1000, expiration=60 * 60, concurrent=True)
@@ -77,7 +83,7 @@ def get_stream(action, video_id, res_type, r_start, r_end=None):
 		r_end = file_size - 1
 	length = min(r_end - start + 1, block_size)
 	end = start + length - 1
-	print end
+	print (r_start, r_end, end)
 
 	url = '{0}&range={1}-{2}'.format(video_info.url, start, end)
 	# print url
@@ -161,5 +167,11 @@ def get_range(request):
 
 if __name__ == '__main__':
 	requests.packages.urllib3.disable_warnings()  # suppress SSL warning
-	app.run(host='0.0.0.0', port=9999, threaded=True)
+	#app.run(host='0.0.0.0', port=9999, threaded=True)
+	options.parse_command_line()
+
+	logging.info('[UOP] UOP is starting...')
+	http_server = HTTPServer(WSGIContainer(app))
+	http_server.listen(9999)
+	IOLoop.instance().start()
 
