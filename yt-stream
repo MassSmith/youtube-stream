@@ -3,6 +3,7 @@
 # chkconfig: - 85 15
 
 home=/usr/local/youtube-stream
+pyhome=/usr/local/bin
 
 get_pid () {
 	local pid=$(ps aux | grep /youtube-stream/server.py | grep -v grep | awk '{print $2}')
@@ -13,7 +14,7 @@ start() {
 	pid=$(get_pid)
 	if [ -z $pid ]; then
 		echo -e "starting youtube-stream server\n"
-		python2.7 -u $home/server.py >>$home/access.log 2>&1 &
+		$pyhome/python2.7 -u $home/server.py >>$home/access.log 2>&1 &
 	else
 		echo -e "youtube-stream is already running with pid=$pid\n"
 	fi	
