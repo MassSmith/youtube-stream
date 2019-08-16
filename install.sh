@@ -5,12 +5,10 @@ server_home=/usr/local/youtube-stream
 git_url="https://raw.githubusercontent.com/gfw-breaker/ssr-accounts/master/README.md"
 
 ## install system dependencies
-yum install -y python python-pip vim sysstat
-
+#yum install -y python python-pip vim sysstat
+yum install -y  vim sysstat
 ## install python libraries
-#pip install flask
-pip install Flask==0.12.2
-pip install pafy youtube-dl requests py_lru_cache
+pip install flask pafy youtube-dl requests py_lru_cache
 
 ## deploy code
 server_ip=$(curl -4 ip.sb)
