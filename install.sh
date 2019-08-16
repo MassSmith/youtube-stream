@@ -19,6 +19,7 @@ curl  https://bootstrap.pypa.io/get-pip.py | python2.7 -
 ## install python libraries
 pip install flask pafy youtube-dl requests py_lru_cache
 
+cd /root/youtube-stream
 ## deploy code
 server_ip=$(curl -4 ip.sb)
 #server_ip=$(ifconfig | grep "inet addr" | sed -n 1p | cut -d':' -f2 | cut -d' ' -f1)
