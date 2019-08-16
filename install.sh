@@ -6,7 +6,16 @@ git_url="https://raw.githubusercontent.com/gfw-breaker/ssr-accounts/master/READM
 
 ## install system dependencies
 #yum install -y python python-pip vim sysstat
-yum install -y  vim sysstat
+yum install -y  vim sysstat gcc zlib zlib-devel openssl openssl-devel
+cd /usr/src
+wget https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz
+tar xzf Python-2.7.16.tgz
+cd Python-2.7.16
+./configure
+make altinstall
+
+cd /usr/src
+curl  https://bootstrap.pypa.io/get-pip.py | python2.7 -
 ## install python libraries
 pip install flask pafy youtube-dl requests py_lru_cache
 
