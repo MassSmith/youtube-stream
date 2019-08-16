@@ -13,7 +13,7 @@ start() {
 	pid=$(get_pid)
 	if [ -z $pid ]; then
 		echo -e "starting youtube-stream server\n"
-		python -u $home/server.py >>$home/access.log 2>&1 &
+		python2.7 -u $home/server.py >>$home/access.log 2>&1 &
 	else
 		echo -e "youtube-stream is already running with pid=$pid\n"
 	fi	
