@@ -8,7 +8,8 @@ git_url="https://raw.githubusercontent.com/gfw-breaker/ssr-accounts/master/READM
 yum install -y python python-pip vim sysstat
 
 ## install python libraries
-pip install Flask==1.0
+#pip install flask
+pip install Flask==0.12.2
 pip install pafy youtube-dl requests py_lru_cache
 
 ## deploy code
