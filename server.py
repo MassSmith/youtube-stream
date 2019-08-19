@@ -180,7 +180,7 @@ def get_range(request):
 
 if __name__ == '__main__':
     requests.packages.urllib3.disable_warnings()  # suppress SSL warning
-    app.run(host='0.0.0.0', port=9999, threaded=True)
+    app.run(host='127.0.0.1', port=9999, threaded=True)
 
 
 # url = "https://www.youtube.com/watch?v=PAFYgZ0Y2js"
