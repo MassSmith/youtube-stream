@@ -6,7 +6,7 @@ home=/usr/local/youtube-stream
 pyhome=/usr/local/bin
 
 get_pid () {
-	local pid=$(ps aux | grep /youtube-stream/server.py | grep -v grep | awk '{print $2}')
+	local pid=$(ps aux | grep /local/youtube-stream/server.py | grep -v grep | awk '{print $2}')
 	echo $pid	
 }
 
