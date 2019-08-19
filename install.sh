@@ -25,7 +25,7 @@ server_ip=$(curl -4 ip.sb)
 #server_ip=$(ifconfig | grep "inet addr" | sed -n 1p | cut -d':' -f2 | cut -d' ' -f1)
 #portal_ip=$(curl -s ${git_url} | grep 8888 | cut -d'/' -f3 | cut -d':' -f1)
 
-sed -i "s/local_server_ip/${server_ip}/g" server.py
+#sed -i "s/local_server_ip/${server_ip}/g" server.py
 for f in $(ls templates/*.html); do
     sed -i "s/local_server_ip/${server_ip}/g" ${f}
 done
