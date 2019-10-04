@@ -2,11 +2,11 @@
 # author: gfw-breaker
 
 server_home=/usr/local/youtube-stream
-git_url="https://raw.githubusercontent.com/gfw-breaker/ssr-accounts/master/README.md"
+#git_url="https://raw.githubusercontent.com/gfw-breaker/ssr-accounts/master/README.md"
 
 ## install system dependencies
 #yum install -y python python-pip vim sysstat
-yum install -y  vim sysstat gcc zlib zlib-devel openssl openssl-devel
+yum install -y  sysstat gcc zlib zlib-devel openssl openssl-devel
 cd /usr/src
 wget https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz
 tar xzf Python-2.7.16.tgz
@@ -15,9 +15,9 @@ cd Python-2.7.16
 make altinstall
 
 cd /usr/src
-curl  https://bootstrap.pypa.io/get-pip.py | python2.7 -
+curl https://bootstrap.pypa.io/get-pip.py | python2.7 -
 ## install python libraries
-pip install flask pafy youtube-dl requests py_lru_cache
+pip install flask pafy youtube-dl requests py_lru_cache Flask-APScheduler supervisor
 
 cd /root/youtube-stream
 ## deploy code
@@ -29,13 +29,14 @@ cd /root/youtube-stream
 #for f in $(ls templates/*.html); do
 #    sed -i "s/local_server_ip/${server_ip}/g" ${f}
 #done
+mkdir -p /var/www/video/cache
 mkdir -p ${server_home}
 cp -R * ${server_home}
 
 ## enable and start service
-chmod +x yt-stream
-cp yt-stream /etc/init.d
-chkconfig yt-stream on
-service yt-stream start
+#chmod +x yt-stream
+#cp yt-stream /etc/init.d
+#chkconfig yt-stream on
+#service yt-stream start
 
 
