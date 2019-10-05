@@ -39,4 +39,46 @@ cp -R * ${server_home}
 #chkconfig yt-stream on
 #service yt-stream start
 
+cd /root
+wget https://getcaddy.com -O getcaddy
+chmod +x getcaddy
 
+#sudo ./getcaddy personal http.ipfilter,http.ratelimit,http.cache,hook.service
+./getcaddy personal http.ipfilter,http.ratelimit,http.cache,hook.service
+
+mkdir -p /etc/caddy
+mkdir -p /var/log/caddy
+mkdir -p /var/www/video
+
+echo_supervisord_conf
+echo_supervisord_conf > /etc/supervisord.conf
+mkdir /etc/supervisor.d
+cat <<EOF >>/etc/supervisord.conf
+[include]
+files = /etc/supervisor.d/*.conf
+EOF
+
+cat <<EOF >/etc/supervisor.d/youtube_streams.conf
+[program:youtube-streams]
+command=/usr/local/bin/python2.7 -u /usr/local/youtube-stream/server.py
+EOF
+
+cat <<EOF >/usr/lib/systemd/system/supervisord.service
+[Unit]
+Description=Process Monitoring and Control Daemon
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/supervisord -c /etc/supervisord.conf 
+ExecStop=/usr/local/bin/supervisorctl shutdown
+ExecReload=/usr/local/bin/supervisorctl reload
+killMode=process
+Restart=on-failure
+RestartSec=42s
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl start supervisord
+systemctl enable supervisord
