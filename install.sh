@@ -29,7 +29,7 @@ cd /root/youtube-stream
 #for f in $(ls templates/*.html); do
 #    sed -i "s/local_server_ip/${server_ip}/g" ${f}
 #done
-mkdir -p /var/www/video/cache
+
 mkdir -p ${server_home}
 cp -R * ${server_home}
 
@@ -49,7 +49,7 @@ chmod +x getcaddy
 mkdir -p /etc/caddy
 mkdir -p /var/log/caddy
 mkdir -p /var/www/video
-
+mkdir -p /var/www/video/cache
 echo_supervisord_conf
 echo_supervisord_conf > /etc/supervisord.conf
 mkdir /etc/supervisor.d
