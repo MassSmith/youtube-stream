@@ -50,6 +50,29 @@ mkdir -p /etc/caddy
 mkdir -p /var/log/caddy
 mkdir -p /var/www/video
 mkdir -p /var/www/video/cache
+cat <<EOF >/etc/caddy/Caddyfile
+:80 {
+     root /var/www/
+     log /var/log/caddy/access.log {
+         rotate_size 3 # Rotate a log when it reaches 3 MB
+         rotate_age  365  # Keep rotated log files for 365 days
+         rotate_keep 1000  # Keep at most 1000 rotated log files
+         rotate_compress # Compress rotated log files in gzip format
+     }
+     errors /var/log/caddy/errors.log
+     tls off
+     gzip
+     proxy / localhost:9999 {
+        header_upstream Host {host}
+        header_upstream X-Forwarded-Port {server_port}
+        header_upstream X-Forwarded-Proto {scheme}
+        except /video
+     }
+}
+EOF
+caddy -service install -agree -email www@youtube.org -conf /etc/caddy/Caddyfile
+caddy -service start
+
 echo_supervisord_conf
 echo_supervisord_conf > /etc/supervisord.conf
 mkdir /etc/supervisor.d
