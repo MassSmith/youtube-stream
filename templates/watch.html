@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <script src="https://unpkg.com/video.js/dist/video.min.js"></script>
 <script src="https://unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.min.js"></script>
+<link rel="shortcut icon"type="image/x-icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
 <link rel='stylesheet' id='videojs-css'  href='https://unpkg.com/video.js/dist/video-js.min.css?ver=4.9.3' type='text/css' media='all' />
 <style>
 html, body {
@@ -48,7 +49,7 @@ iframe {
 <p align="center">
 <video id=player height="360px" width="640px" class="video-js vjs-default-skin vjs-big-play-centered" controls autoplay preload="auto">
   <source
-     src="./live?v={{id}}"
+     src="./{{path}}?v={{id}}"
      type="video/mp4">
 </video>
 <script type="text/javascript">
@@ -58,7 +59,12 @@ iframe {
 </p>
 
 <h5 align="center">
-    <a href="./download?v={{id}}&type=audio">下载音频</a> &nbsp;&nbsp;&nbsp;&nbsp; <a href="./download?v={{id}}&type=video">下载视频</a>
+<p>视频下载方法：</br>
+当视频正常播放后，请等待3-5分钟，重新刷新当前页面，</br>
+或关闭当前页面，重新打开当前网址。</br>
+鼠标右击播放画面，选择“视频另存为”。</br>
+如果失败，待等3-5分钟后，重试以上步骤。
+</p>
 </h5>
 <h5 align="center">友情链接：
     <a href="https://github.com/dfcbzs/fq/" target="_blank"><img src="static/fq.png"  alt="fq" /></a> -
