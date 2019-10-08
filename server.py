@@ -7,6 +7,13 @@ import pafy
 import requests
 import lru
 import urllib
+import threading
+import commands
+import time
+import json
+import os
+
+from flask_apscheduler import APScheduler
 from flask import Flask
 from flask import Response
 from flask import stream_with_context
@@ -14,6 +21,34 @@ from flask import render_template
 from flask import request
 from flask import redirect
 
+cache_json_path = os.path.split(os.path.realpath(__file__))[0] + "/cache.json"
+
+
+with open(cache_json_path) as f:
+     cache_json = json.load(f)
+
+class Config(object):
+    SCHEDULER_API_ENABLED = True
+
+Scheduler = APScheduler()
+
+#一天是86400秒
+@Scheduler.task('interval', id='clear_cache', days=20)
+def clear_cache():
+    global cache_json
+    current_time = time.time()
+    for key in cache_json.keys():
+         length_time = current_time - cache_json[key]
+         if length_time > 864000:
+            try:
+                os.remove("/var/www/video/cache/" + key + ".mp4")
+            except OSError as e:
+                 print(e)
+            else:
+                 print("File is deleted successfully")
+                 cache_json.pop(key)
+    with open(cache_json_path, "w") as f:
+         json.dump(cache_json, f, indent=2)
 app = Flask(__name__)
 cache = lru.LRUCacheDict(max_size=100, expiration=60*60, concurrent=True)
 files = lru.LRUCacheDict(max_size=5000, expiration=60 * 60, concurrent=True)
@@ -21,6 +56,11 @@ files = lru.LRUCacheDict(max_size=5000, expiration=60 * 60, concurrent=True)
 buffer_size = 1024 * 1024  # 1MB
 youtube_url = "https://www.youtube.com/watch?v="
 
+
+app.config.from_object(Config())
+Scheduler.init_app(app)
+
+Scheduler.start()
 
 class VideoInfo:
 
@@ -34,7 +74,7 @@ class VideoInfo:
 
 
 def get_file_by_id(video_id):
-    file_name = str(uuid.uuid1()) + '.mp4'
+    file_name = str(video_id) + '.mp4'
     files[file_name] = video_id
     return file_name
 
@@ -42,13 +82,45 @@ def get_file_by_id(video_id):
 def get_id_by_file(virtual_file):
     return files[virtual_file]
 
+def cache_download(video_id):
+        global cache_json
+        try:
+            video = pafy.new(youtube_url + video_id)
+            streamsList = video.streams
+            for index in range(len(streamsList)):
+                if streamsList[index].extension == 'mp4':
+                   if streamsList[index].resolution == '640x360' or streamsList[index].resolution == '480x360' or streamsList[index].resolution == '360x360':
+                      best = streamsList[index]
+                      break
+                else:
+                   best = video.getbest('mp4')
+            file_name = "/var/www/video/cache/" + str(video_id) + '.mp4'
+            file_path = best.download(filepath=file_name, quiet=True)
+            cache_json = append_cache(cache_json,video_id)
+            return file_path
+        except Exception as e:
+            print e.message
+            print 'failed to cache download: ' + youtube_url + video_id
+            return None
 
 def get_video_info(video_id):
     if not cache.has_key(video_id):
         try:
             video = pafy.new(youtube_url + video_id)
-            best = video.getbest('mp4')
+            streamsList = video.streams
+            for index in range(len(streamsList)):
+                print('index',streamsList[index].extension,streamsList[index].resolution,streamsList[index].get_filesize())
+                if streamsList[index].extension == 'mp4':
+                   if streamsList[index].resolution == '640x360' or streamsList[index].resolution == '480x360' or streamsList[index].resolution == '360x360':
+                      best = streamsList[index]
+                      print('if',best.resolution, best.extension, best.get_filesize())
+                      break
+                else:
+                   best = video.getbest('mp4')
+                   print('else',best.resolution, best.extension, best.get_filesize())
             audio = video.getbestaudio('m4a')
+            cache_down = threading.Thread(target=cache_download, args=(video_id,))
+            cache_down.start()
             video_info = VideoInfo(video_id, video.title, best.url, audio.url, best.extension, best.get_filesize())
             cache[video_id] = video_info
             return video_info
@@ -111,6 +183,22 @@ def dl_stream(action, video_id, res_type):
     }
     return Response(stream_with_context(req.iter_content(chunk_size=buffer_size)), headers=headers)
 
+def append_cache(cache_json,video_id):
+    cache_json[video_id] = time.time()
+#         print(cache_json)
+    with open(cache_json_path, "w") as f:
+         json.dump(cache_json, f, indent=2)
+    return  cache_json
+
+
+def change_cache(cache_json,video_id):
+    for key in cache_json:
+         if key == video_id:
+            cache_json[key] = time.time()
+            break
+    with open(cache_json_path, "w") as f:
+         json.dump(cache_json, f, indent=2)
+    return  cache_json
 
 @app.route('/')
 def home():
@@ -120,10 +208,16 @@ def home():
 @app.route('/watch')
 def watch():
     video_id = request.args.get('v').split('.')[0]
-    video_info = get_video_info(video_id)
-    if video_info is None or video_info.size == 0:
-        return render_template("error.html")
-    return render_template("watch.html", id=video_info.id, title=video_info.title, extension=video_info.extension)
+    cmd = "find /var/www/video/cache -name " + video_id + ".mp4"
+    cmd_result = commands.getoutput(cmd)
+    finded = cmd_result.find(video_id)
+    if finded != -1:
+        return render_template("watch.html", path="cache",id=video_id)
+    else:
+        video_info = get_video_info(video_id)
+        if video_info is None or video_info.size == 0:
+            return render_template("error.html")
+        return render_template("watch.html", path="live",id=video_info.id, title=video_info.title, extension=video_info.extension)
 
 
 @app.route('/embed/<video_id>')
@@ -131,6 +225,13 @@ def embed(video_id):
     video_info = get_video_info(video_id)
     return render_template("embed.html", id=video_info.id, title=video_info.title, extension=video_info.extension)
 
+@app.route('/cache')
+def playcache():
+    global cache_json    
+    video_id = request.args.get('v').split('.')[0]
+    file_id = video_id + ".mp4"
+    cache_json = change_cache(cache_json,video_id)
+    return redirect('/video/cache/' + file_id, code=301)
 
 @app.route('/live')
 def play():
