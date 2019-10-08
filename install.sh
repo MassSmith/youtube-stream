@@ -63,9 +63,7 @@ cat <<EOF >/etc/caddy/Caddyfile
      tls off
      gzip
      proxy / localhost:9999 {
-        header_upstream Host {host}
-        header_upstream X-Forwarded-Port {server_port}
-        header_upstream X-Forwarded-Proto {scheme}
+        transparent
         except /video
      }
 }
