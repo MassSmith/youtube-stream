@@ -1,5 +1,6 @@
 #!/bin/bash
 # author: gfw-breaker
+#CentOS 7
 
 server_home=/usr/local/youtube-stream
 #git_url="https://raw.githubusercontent.com/gfw-breaker/ssr-accounts/master/README.md"
