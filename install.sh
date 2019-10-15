@@ -29,7 +29,7 @@ cd /root/youtube-stream
 #for f in $(ls templates/*.html); do
 #    sed -i "s/local_server_ip/${server_ip}/g" ${f}
 #done
-
+echo "{}">cache.json
 mkdir -p ${server_home}
 cp -R * ${server_home}
 
