@@ -13,6 +13,7 @@ import time
 import datetime
 import json
 import os
+#import chardet
 
 from flask_apscheduler import APScheduler
 from flask import Flask
@@ -33,7 +34,7 @@ class Config(object):
 
 Scheduler = APScheduler()
 
-#一天是86400秒
+#一天是86400秒,设置为7天不访问则删除
 @Scheduler.task('interval', id='clear_cache', days=4, next_run_time=datetime.datetime.now())
 def clear_cache():
     global cache_json
@@ -88,6 +89,9 @@ def cache_download(video_id):
         try:
             video = pafy.new(youtube_url + video_id)
             streamsList = video.streams
+            if video.length >= 10800 :
+               print 'failed to cache download: ' + youtube_url + video_id
+               return None
             for index in range(len(streamsList)):
                 if streamsList[index].extension == 'mp4':
                    if streamsList[index].resolution == '640x360' or streamsList[index].resolution == '480x360' or streamsList[index].resolution == '360x360':
@@ -108,6 +112,11 @@ def get_video_info(video_id):
     if not cache.has_key(video_id):
         try:
             video = pafy.new(youtube_url + video_id)
+#            print chardet.detect(video.title)
+#            print (video.title or "文貴" in video.title or "文贵" in video.author)
+#            if ("文贵" in video.title):
+#                print 'failed to getss: ' + youtube_url + video_id
+#                return None            
             streamsList = video.streams
             for index in range(len(streamsList)):
                 print('index',streamsList[index].extension,streamsList[index].resolution,streamsList[index].get_filesize())
