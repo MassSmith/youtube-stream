@@ -33,13 +33,13 @@ class Config(object):
 Scheduler = APScheduler()
 
 #一天是86400秒
-@Scheduler.task('interval', id='clear_cache', days=20)
+@Scheduler.task('interval', id='clear_cache', days=4, next_run_time=datetime.datetime.now())
 def clear_cache():
     global cache_json
     current_time = time.time()
     for key in cache_json.keys():
          length_time = current_time - cache_json[key]
-         if length_time > 864000:
+         if length_time > 604800:
             try:
                 os.remove("/var/www/video/cache/" + key + ".mp4")
             except OSError as e:
