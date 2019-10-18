@@ -45,7 +45,7 @@ wget https://getcaddy.com -O getcaddy
 chmod +x getcaddy
 
 #sudo ./getcaddy personal http.ipfilter,http.ratelimit,http.cache,hook.service
-./getcaddy personal http.ipfilter,http.ratelimit,http.cache,hook.service
+./getcaddy personal http.ipfilter,http.ratelimit,http.cache,tls.dns.cloudflare,hook.service
 
 mkdir -p /etc/caddy
 mkdir -p /var/log/caddy
