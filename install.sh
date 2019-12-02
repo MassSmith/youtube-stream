@@ -1,15 +1,32 @@
 #!/bin/bash
 # author: gfw-breaker
 #CentOS 7
+############use############
+#yum install -y git 
+#git clone https://github.com/MassSmith/youtube-stream.git
+#cd youtube-stream
+#"bash install.sh <yourdomain>"
 
 server_home=/usr/local/youtube-stream
 #git_url="https://raw.githubusercontent.com/gfw-breaker/ssr-accounts/master/README.md"
+yum install curl nano net-tools -y
 
+ip=$(curl -4 ip.sb)
+test_domain=$(ping $1 -c 1 | grep -oE -m1 "([0-9]{1,3}\.){3}[0-9]{1,3}")
+if [[ $test_domain != $ip ]]; then
+	echo
+	echo -e "缺失域名或域名未正确解析到当前VPS的IP地址：$ip"
+	echo
+    echo -e "运行时请添加域名参数或等待域名正确解析到当前VPS的IP后，再运行脚本"
+	echo
+	exit 1
+fi
 ## install system dependencies
 #yum install -y python python-pip vim sysstat
 yum install -y  sysstat gcc zlib zlib-devel openssl openssl-devel
 cd /usr/src
-wget https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz
+#wget https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz
+curl -O https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz
 tar xzf Python-2.7.16.tgz
 cd Python-2.7.16
 ./configure
@@ -41,11 +58,12 @@ cp -R * ${server_home}
 #service yt-stream start
 
 cd /root
-wget https://getcaddy.com -O getcaddy
+#wget https://getcaddy.com -O getcaddy
+curl https://getcaddy.com -o getcaddy
 chmod +x getcaddy
 
 #sudo ./getcaddy personal http.ipfilter,http.ratelimit,http.cache,hook.service
-./getcaddy personal http.ipfilter,http.ratelimit,http.cache,tls.dns.cloudflare,hook.service
+./getcaddy personal http.ipfilter,http.ratelimit,http.cache,hook.service,http.filter
 
 mkdir -p /etc/caddy
 mkdir -p /var/log/caddy
@@ -69,6 +87,11 @@ cat <<EOF >/etc/caddy/Caddyfile
      }
 }
 EOF
+domain=$1
+sed -i "s/:80/${domain:=":80"}/" /etc/caddy/Caddyfile
+email=$1
+email=${email/./@}
+sed -i "s/off/${email:="off"}/" /etc/caddy/Caddyfile
 caddy -service install -agree -email www@youtube.org -conf /etc/caddy/Caddyfile
 caddy -service start
 
