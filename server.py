@@ -100,6 +100,10 @@ def get_video_info(video_id):
     if not cache.has_key(video_id):
         try:
             video = pafy.new(youtube_url + video_id)
+            ##如果视频时长超过3个小时则不下载也不播放
+            if video.length >= 10800 :
+                 print 'failed to cache download: ' + youtube_url + video_id
+                 return None
             streamsList = video.streams
             for index in range(len(streamsList)):
 #                print('index',streamsList[index].extension,streamsList[index].resolution,streamsList[index].get_filesize())
