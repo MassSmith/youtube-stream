@@ -84,22 +84,10 @@ def get_file_by_id(video_id):
 def get_id_by_file(virtual_file):
     return files[virtual_file]
 
-def cache_download(video_id):
+def cache_download(best,video_id):
         global cache_json
         try:
-            video = pafy.new(youtube_url + video_id)
-            streamsList = video.streams
-            if video.length >= 10800 :
-               print 'failed to cache download: ' + youtube_url + video_id
-               return None
-            for index in range(len(streamsList)):
-                if streamsList[index].extension == 'mp4':
-                   if streamsList[index].resolution == '640x360' or streamsList[index].resolution == '480x360' or streamsList[index].resolution == '360x360':
-                      best = streamsList[index]
-                      break
-                else:
-                   best = video.getbest('mp4')
-            file_name = "/var/www/video/cache/" + str(video_id) + '.mp4'
+            file_name = '/var/www/video/cache/' + str(video_id) + '.' + best.extension
             file_path = best.download(filepath=file_name, quiet=True)
             cache_json = append_cache(cache_json,video_id)
             return file_path
@@ -112,24 +100,19 @@ def get_video_info(video_id):
     if not cache.has_key(video_id):
         try:
             video = pafy.new(youtube_url + video_id)
-#            print chardet.detect(video.title)
-#            print (video.title or "文貴" in video.title or "文贵" in video.author)
-#            if ("文贵" in video.title):
-#                print 'failed to getss: ' + youtube_url + video_id
-#                return None            
             streamsList = video.streams
             for index in range(len(streamsList)):
-                print('index',streamsList[index].extension,streamsList[index].resolution,streamsList[index].get_filesize())
+#                print('index',streamsList[index].extension,streamsList[index].resolution,streamsList[index].get_filesize())
                 if streamsList[index].extension == 'mp4':
                    if streamsList[index].resolution == '640x360' or streamsList[index].resolution == '480x360' or streamsList[index].resolution == '360x360':
                       best = streamsList[index]
-                      print('if',best.resolution, best.extension, best.get_filesize())
+#                      print('if',best.resolution, best.extension, best.get_filesize())
                       break
                 else:
                    best = video.getbest('mp4')
-                   print('else',best.resolution, best.extension, best.get_filesize())
+#                   print('else',best.resolution, best.extension, best.get_filesize())
             audio = video.getbestaudio('m4a')
-            cache_down = threading.Thread(target=cache_download, args=(video_id,))
+            cache_down = threading.Thread(target=cache_download, args=(best,video_id))
             cache_down.start()
             video_info = VideoInfo(video_id, video.title, best.url, audio.url, best.extension, best.get_filesize())
             cache[video_id] = video_info
@@ -227,8 +210,21 @@ def watch():
         video_info = get_video_info(video_id)
         if video_info is None or video_info.size == 0:
             return render_template("error.html")
-        return render_template("watch.html", path="live",id=video_info.id, title=video_info.title, extension=video_info.extension)
+        return render_template("watch.html", path="live",id=video_info.id)
 
+@app.route('/watching')
+def watching():
+    video_id = request.args.get('v').split('.')[0]
+    cmd = "find /var/www/video/cache -name " + video_id + ".mp4"
+    cmd_result = commands.getoutput(cmd)
+    finded = cmd_result.find(video_id)
+    if finded != -1:
+        return render_template("watching.html", path="cache",id=video_id)
+    else:
+        video_info = get_video_info(video_id)
+        if video_info is None or video_info.size == 0:
+            return render_template("error.html")
+        return render_template("watching.html", path="live",id=video_info.id)
 
 @app.route('/embed/<video_id>')
 def embed(video_id):
