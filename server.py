@@ -115,7 +115,7 @@ def get_video_info(video_id):
                 else:
                    best = video.getbest('mp4')
 #                   print('else',best.resolution, best.extension, best.get_filesize())
-            audio = video.getbestaudio('m4a')
+  #          audio = video.getbestaudio('m4a')
             cache_down = threading.Thread(target=cache_download, args=(best,video_id))
             cache_down.start()
             video_info = VideoInfo(video_id, video.title, best.url, audio.url, best.extension, best.get_filesize())
